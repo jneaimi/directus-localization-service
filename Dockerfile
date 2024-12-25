@@ -15,8 +15,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ /app/src/
 COPY .env /app/.env
 
+# Create and set up start script
+RUN echo '#!/bin/bash\nuvicorn src.main:app --host 0.0.0.0 --port 8000' > /app/start.sh && \
+    chmod +x /app/start.sh
+
 # Make sure the module can be found
 ENV PYTHONPATH=/app
 
 # Run the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/start.sh"]
