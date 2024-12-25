@@ -1,11 +1,10 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, Security
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from datetime import datetime
-import secrets
 from app.models import EnglishContentRequest, TranslatedContent, TranslationPayload
-from app.services import translate_text
+from app.services import translate_text, verify_credentials
 from app.config import settings
 
 app = FastAPI(title="Directus Localization Service")
@@ -20,22 +19,6 @@ app.add_middleware(
 )
 
 security = HTTPBasic()
-
-# Basic auth credentials
-USERNAME = "admin"
-PASSWORD = "password"
-
-def verify_credentials(credentials: HTTPBasicCredentials = Security(security)):
-    correct_username = secrets.compare_digest(credentials.username, USERNAME)
-    correct_password = secrets.compare_digest(credentials.password, PASSWORD)
-
-    if not (correct_username and correct_password):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-    return credentials
 
 @app.post("/translate")
 async def translate(
@@ -69,7 +52,6 @@ async def translate(
             }
         }
 
-        # Modified this line to handle Arabic characters properly
         return TranslatedContent(arabicContent=json.dumps(
             arabic_content,
             ensure_ascii=False,
