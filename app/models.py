@@ -1,24 +1,21 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Optional, Any
 
-class TranslationUpdate(BaseModel):
-    headline: str
-    languages_code: Dict[str, str]
+class LanguageCode(BaseModel):
+    code: str
+
+class TranslationItem(BaseModel):
+    content: str  # Changed from headline to content
+    languages_code: LanguageCode
     id: int
 
+class TranslationOperations(BaseModel):
+    create: List[Any] = []
+    update: List[TranslationItem]
+    delete: List[Any] = []
+
 class TranslationPayload(BaseModel):
-    translations: Dict[str, List[TranslationUpdate]]
-
-class EnglishContentRequest(BaseModel):
-    englishContent: str
+    translations: TranslationOperations
 
 class TranslatedContent(BaseModel):
     arabicContent: str
-
-class TranslatedContent(BaseModel):
-    arabicContent: str
-
-    class Config:
-        json_encoders = {
-            str: lambda v: v
-        }
