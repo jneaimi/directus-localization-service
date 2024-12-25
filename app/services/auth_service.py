@@ -1,11 +1,13 @@
 import secrets
 from fastapi import HTTPException, Security
-from fastapi.security import HTTPBasicCredentials
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
+security = HTTPBasic()
 
 USERNAME = "admin"
 PASSWORD = "password"
 
-def verify_credentials(credentials: HTTPBasicCredentials = Security(HTTPBasic())):
+def verify_credentials(credentials: HTTPBasicCredentials = Security(security)):
     correct_username = secrets.compare_digest(credentials.username, USERNAME)
     correct_password = secrets.compare_digest(credentials.password, PASSWORD)
 

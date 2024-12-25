@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from datetime import datetime
@@ -18,12 +17,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-security = HTTPBasic()
-
 @app.post("/translate")
 async def translate(
     request: EnglishContentRequest,
-    credentials: HTTPBasicCredentials = Depends(verify_credentials)
+    credentials = Depends(verify_credentials)
 ):
     try:
         content_dict = json.loads(request.englishContent)
@@ -69,3 +66,7 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat()
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
