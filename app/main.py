@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from datetime import datetime
-from app.models import TranslatedContent, TranslationPayload
+from app.models import EnglishContentRequest, TranslatedContent, TranslationPayload
 from app.services import translate_text, verify_credentials
 from app.config import settings
 
@@ -19,36 +19,20 @@ app.add_middleware(
 
 @app.post("/translate")
 async def translate(
-    request: Request,
+    request: EnglishContentRequest,
     credentials = Depends(verify_credentials)
 ):
     try:
-        # Get raw body and parse JSON
-        raw_body = await request.body()
-        body_str = raw_body.decode('utf-8')
-
-        try:
-            # Parse the JSON directly
-            content_dict = json.loads(body_str)
-        except json.JSONDecodeError as e:
+        if not request.translations:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid JSON format: {str(e)}"
-            )
-
-        # Validate the structure using Pydantic
-        try:
-            translation_payload = TranslationPayload(**content_dict)
-        except Exception as e:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid translation payload structure: {str(e)}"
+                detail="No valid translation data found"
             )
 
         # Process translations
         arabic_updates = []
-        for update in translation_payload.translations.update:
-            english_text = update.content  # Changed from headline to content
+        for update in request.translations.update:
+            english_text = update.content
 
             arabic_text = await translate_text(
                 text=english_text,
@@ -57,7 +41,7 @@ async def translate(
             )
 
             arabic_update = {
-                "content": arabic_text,  # Changed from headline to content
+                "content": arabic_text,
                 "languages_code": {"code": "ar-SA"},
                 "id": update.id
             }
@@ -89,33 +73,12 @@ async def translate(
 @app.post("/debug")
 async def debug_request(request: Request):
     try:
-        raw_body = await request.body()
-        body_str = raw_body.decode('utf-8')
-
-        try:
-            parsed_json = json.loads(body_str)
-
-            # Try to validate with Pydantic
-            try:
-                translation_payload = TranslationPayload(**parsed_json)
-                validation_status = "Successfully validated payload structure"
-            except Exception as e:
-                validation_status = f"Failed to validate payload: {str(e)}"
-
-            return {
-                "raw_body": body_str,
-                "parsed_json": parsed_json,
-                "validation_status": validation_status,
-                "content_type": request.headers.get("content-type"),
-                "headers": dict(request.headers)
-            }
-
-        except json.JSONDecodeError as e:
-            return {
-                "error": f"Failed to parse JSON: {str(e)}",
-                "raw_body": body_str
-            }
-
+        body = await request.json()
+        return {
+            "received_data": body,
+            "content_type": request.headers.get("content-type"),
+            "headers": dict(request.headers)
+        }
     except Exception as e:
         return {"error": str(e)}
 
