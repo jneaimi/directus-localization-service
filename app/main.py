@@ -39,50 +39,29 @@ async def translate(
     payload: TranslationPayload,
     credentials=Depends(verify_credentials)
 ):
+    import logging
+    logger = logging.getLogger("uvicorn.error")
+    logger.info(f"Payload received: {payload.json()}")  # Log the received payload
+    
     try:
-        # Process translations
         arabic_updates = []
         for update in payload.translations.update:
             english_text = update.content
-
-            # Perform translation
             arabic_text = await translate_text(
                 text=english_text,
                 source_language="en",
                 target_language="ar"
             )
-
-            arabic_update = {
+            arabic_updates.append({
                 "content": arabic_text,
                 "languages_code": {"code": "ar-SA"},
                 "id": update.id
-            }
-            arabic_updates.append(arabic_update)
-
-        # Prepare response
-        arabic_content = {
-            "translations": {
-                "create": [],
-                "update": arabic_updates,
-                "delete": []
-            }
-        }
-
-        return TranslatedContent(
-            arabicContent=json.dumps(
-                arabic_content,
-                ensure_ascii=False,
-                separators=(',', ':')
-            )
-        )
-
+            })
+        return {"translations": {"create": [], "update": arabic_updates, "delete": []}}
     except Exception as e:
-        # Detailed error response
-        print(f"Unexpected error: {str(e)}")  # Debugging log
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {str(e)}"
-        )
+        logger.error(f"Error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 
 @app.get("/health")
