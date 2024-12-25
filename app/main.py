@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from datetime import datetime
-from app.models import EnglishContentRequest, TranslatedContent, TranslationPayload
+from app.models import TranslationPayload, TranslatedContent
 from app.services import translate_text, verify_credentials
 from app.config import settings
 
@@ -19,19 +19,13 @@ app.add_middleware(
 
 @app.post("/translate")
 async def translate(
-    request: EnglishContentRequest,
+    payload: TranslationPayload,
     credentials = Depends(verify_credentials)
 ):
     try:
-        if not request.translations:
-            raise HTTPException(
-                status_code=400,
-                detail="No valid translation data found"
-            )
-
         # Process translations
         arabic_updates = []
-        for update in request.translations.update:
+        for update in payload.translations.update:
             english_text = update.content
 
             arabic_text = await translate_text(
@@ -61,8 +55,6 @@ async def translate(
             separators=(',', ':')
         ))
 
-    except HTTPException:
-        raise
     except Exception as e:
         print(f"Unexpected error: {str(e)}")  # For debugging
         raise HTTPException(
