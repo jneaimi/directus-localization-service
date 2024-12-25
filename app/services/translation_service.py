@@ -46,8 +46,7 @@ Your final output must be in the following JSON format:
 
         translation_result = json.loads(response.choices[0].message.content.strip())
         return translation_result["arabic_translation"]
-
-    except json.JSONDecodeError:
-        raise Exception("Failed to parse translation response")
+    except json.JSONDecodeError as jde:
+        raise Exception("Failed to parse translation response: Invalid JSON format") from jde
     except Exception as e:
-        raise Exception(f"Translation failed: {str(e)}")
+        raise Exception(f"Translation failed: {str(e)}") from e

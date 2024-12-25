@@ -1,11 +1,12 @@
+import os
 import secrets
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 security = HTTPBasic()
 
-USERNAME = "admin"
-PASSWORD = "password"
+USERNAME = os.getenv("APP_USERNAME", "admin")
+PASSWORD = os.getenv("APP_PASSWORD", "password")
 
 def verify_credentials(credentials: HTTPBasicCredentials = Security(security)):
     correct_username = secrets.compare_digest(credentials.username, USERNAME)
