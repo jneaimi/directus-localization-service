@@ -3,9 +3,10 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from datetime import datetime
-from .models import EnglishContentRequest, TranslatedContent, TranslationPayload
-from .services import translate_text
 import secrets
+from src.models import EnglishContentRequest, TranslatedContent, TranslationPayload
+from src.services import translate_text
+from src.config import settings
 
 app = FastAPI(title="Directus Localization Service")
 
