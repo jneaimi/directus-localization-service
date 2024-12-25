@@ -1,5 +1,5 @@
 from openai import AsyncOpenAI
-from src.config import settings
+from app.config import settings
 import json
 
 client = AsyncOpenAI(api_key=settings.openai_api_key)

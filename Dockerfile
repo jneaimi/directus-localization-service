@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /code
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -12,15 +12,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY src/ /app/src/
-COPY .env /app/.env
+COPY app /code/app
+COPY .env /code/.env
 
-# Create and set up start script
-RUN echo '#!/bin/bash\nuvicorn src.main:app --host 0.0.0.0 --port 8000' > /app/start.sh && \
-    chmod +x /app/start.sh
-
-# Make sure the module can be found
-ENV PYTHONPATH=/app
+# Set environment variables
+ENV PYTHONPATH=/code
+ENV MODULE_NAME=app.main
+ENV VARIABLE_NAME=app
+ENV PORT=8000
 
 # Run the application
-CMD ["/app/start.sh"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

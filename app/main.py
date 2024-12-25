@@ -4,9 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 from datetime import datetime
 import secrets
-from src.models import EnglishContentRequest, TranslatedContent, TranslationPayload
-from src.services import translate_text
-from src.config import settings
+from app.models import EnglishContentRequest, TranslatedContent, TranslationPayload
+from app.services import translate_text
+from app.config import settings
 
 app = FastAPI(title="Directus Localization Service")
 
